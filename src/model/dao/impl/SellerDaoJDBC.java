@@ -92,8 +92,26 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public void deleteById(Integer id) {
-		// TODO Auto-generated method stub
-		
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement(
+					"DELETE FROM seller "
+					+ "WHERE Id=? ");
+			
+			st.setInt(1, id);
+			
+			int rowsAffected = st.executeUpdate();
+			
+			if (rowsAffected == 0) {
+				throw new DbException("id does not exist");
+			}
+		}
+		catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+		}
 	}
 
 	@Override
@@ -108,6 +126,7 @@ public class SellerDaoJDBC implements SellerDao {
 					+ "WHERE seller.Id = ?");
 			
 			st.setInt(1, id);
+			
 			rs = st.executeQuery();
 			if (rs.next()) {
 				Department dep = instantiateDepartment(rs);
@@ -155,8 +174,10 @@ public class SellerDaoJDBC implements SellerDao {
 					+ "ORDER BY Name");
 			
 			rs = st.executeQuery();
+			
 			List<Seller> list = new ArrayList<>();
 			Map<Integer, Department> map = new HashMap<>();
+			
 			while (rs.next()) {
 				Department dep = map.get(rs.getInt("DepartmentId"));
 				if (dep == null) {
